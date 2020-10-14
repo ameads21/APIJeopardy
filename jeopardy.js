@@ -1,3 +1,4 @@
+let numCategories = 6;
 let categories = [];
 let gameStarted = false;
 let url_base = "https://jservice.io/api/";
@@ -9,16 +10,14 @@ let startButton = document.querySelector(".btn");
 $(startButton).on("click", function () {
   showLoadingView();
   setupAndStart();
-  $(this).text("Loading...");
-  $(this).prop("disabled", true);
+  $(this).text("Loading...").prop("disabled", true);
 });
 
 //Getting the category ID's
 function getCategoryIds(catID) {
-  const res = [];
-  for (category of catID) {
-    res.push(category.category_id);
-  }
+  let res = catID.map(function (val) {
+    return val.category_id;
+  });
   return res;
 }
 
@@ -63,8 +62,8 @@ function fillTable() {
   let column = 0; //This is vertical
   let tdInfo = [];
 
-  for (let i = 0; i < 31; i++) {
-    if (row >= 6) {
+  for (let i = 0; i < numCategories * 5 + 1; i++) {
+    if (row >= numCategories) {
       row = 0;
       column += 1;
       let tr = document.createElement("tr");
@@ -87,6 +86,7 @@ function fillTable() {
 //Click events in the table
 function handleClick(evt) {
   let evtInfo = categories[evt.target.id[0]].clues[evt.target.id[2]];
+  console.log(evtInfo);
   if (evtInfo.showing === "null") {
     evt.target.innerHTML = evtInfo.question;
     evtInfo.showing = "question";
@@ -110,21 +110,24 @@ function hideLoadingView() {
   gameStarted = true;
 }
 
-//Initilizing Game
-async function setupAndStart() {
-  if (gameStarted === true) {
-    categories = [];
-    document.querySelector("table").remove();
+//Getting the Category ID's
+async function checkForDuplicates() {
+  let categories = [];
+  let randomCategory = await axios.get(
+    `https://jservice.io/api/random?count=${numCategories}`
+  );
+  let categoryID = [...new Set(getCategoryIds(randomCategory.data))];
+  categories.push(categoryID);
+  if (categoryID.length >= numCategories) {
+    finishingInitilization(categoryID);
+  } else {
+    checkForDuplicates();
   }
-  const randomCategory = await axios.get(
-    "https://jservice.io/api/random?count=30"
-  );
-  let categoryID = [...new Set(getCategoryIds(randomCategory.data))].splice(
-    0,
-    6
-  );
+}
 
-  for (cat of categoryID) {
+//Getting Clues and building the table
+async function finishingInitilization(categoryID) {
+  for (cat of categoryID.splice(0, numCategories)) {
     let category = await axios.get(
       `https://jservice.io/api/category?id=${cat}`
     );
@@ -136,4 +139,13 @@ async function setupAndStart() {
 
   //Hiding loading bar
   hideLoadingView();
+}
+
+//Initilizing Game
+function setupAndStart() {
+  if (gameStarted === true) {
+    categories = [];
+    document.querySelector("table").remove();
+  }
+  checkForDuplicates();
 }
