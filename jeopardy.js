@@ -1,8 +1,8 @@
 let categories = [];
 let gameStarted = false;
+let url_base = "https://jservice.io/api/";
 
 let loadingBar = document.querySelector(".spinner-border");
-
 let startButton = document.querySelector(".btn");
 
 //Starting Game button
@@ -10,6 +10,7 @@ $(startButton).on("click", function () {
   showLoadingView();
   setupAndStart();
   $(this).text("Loading...");
+  $(this).prop("disabled", true);
 });
 
 //Getting the category ID's
@@ -24,19 +25,16 @@ function getCategoryIds(catID) {
 //Getting the category from the category ID's
 function getCategory(catId) {
   let title = catId.data.title;
-  let clues = [];
-  let quesAnswers = { title, clues };
-  for (clue of catId.data.clues.splice(0, 5)) {
-    let question = clue.question;
-    let answer = clue.answer;
-    clues.push({ question, answer, showing: "null" });
-  }
-  return quesAnswers;
+  let clues = catId.data.clues.map(function (val) {
+    let question = val.question;
+    let answer = val.answer;
+    return { question, answer, showing: "null" };
+  });
+  return { title, clues };
 }
 
 //Creating Table
-async function fillTable() {
-  await axios.get("https://jservice.io/api/random?count=6");
+function fillTable() {
   let body = document.querySelector(".container-fluid");
   let table = document.createElement("table");
 
@@ -88,15 +86,12 @@ async function fillTable() {
 
 //Click events in the table
 function handleClick(evt) {
-  if (categories[evt.target.id[0]].clues[evt.target.id[2]].showing === "null") {
-    evt.target.innerHTML =
-      categories[evt.target.id[0]].clues[evt.target.id[2]].question;
-    categories[evt.target.id[0]].clues[evt.target.id[2]].showing = "question";
-  } else if (
-    categories[evt.target.id[0]].clues[evt.target.id[2]].showing === "question"
-  ) {
-    evt.target.innerHTML =
-      categories[evt.target.id[0]].clues[evt.target.id[2]].answer;
+  let evtInfo = categories[evt.target.id[0]].clues[evt.target.id[2]];
+  if (evtInfo.showing === "null") {
+    evt.target.innerHTML = evtInfo.question;
+    evtInfo.showing = "question";
+  } else if (evtInfo.showing === "question") {
+    evt.target.innerHTML = evtInfo.answer;
     evt.target.style.backgroundColor = "green";
   } else {
     evt.target.style.backgroundColor = "green";
@@ -110,6 +105,7 @@ function showLoadingView() {
 
 function hideLoadingView() {
   $(".spinner-border").css("display", "none");
+  $("button").prop("disabled", false);
   $("button").text("Restart");
   gameStarted = true;
 }
