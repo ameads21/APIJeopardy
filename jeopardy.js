@@ -1,4 +1,4 @@
-let numCategories = 6;
+let numCategories = 10;
 let numQuestions = 5;
 let categories = [];
 let gameStarted = false;
@@ -119,7 +119,7 @@ async function checkForDuplicates() {
   let categoryID = [...new Set(getCategoryIds(randomCategory.data))];
   categories.push(categoryID);
   //If the unique Category ID isn't the same as the number of categories assigned, redo this function until so
-  if (categoryID.length >= numCategories) {
+  if (categoryID.length === numCategories) {
     finishingInitilization(categoryID);
   } else {
     //If there are duplicates, it will repeat this function until there aren't any
