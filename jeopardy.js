@@ -1,4 +1,4 @@
-let numCategories = 10;
+let numCategories = 6;
 let numQuestions = 5;
 let categories = [];
 let gameStarted = false;
