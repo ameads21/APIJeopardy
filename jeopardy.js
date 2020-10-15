@@ -1,4 +1,5 @@
 let numCategories = 6;
+let numQuestions = 5;
 let categories = [];
 let gameStarted = false;
 let url_base = "https://jservice.io/api/";
@@ -62,7 +63,7 @@ function fillTable() {
   let column = 0; //This is vertical
   let tdInfo = [];
 
-  for (let i = 0; i < numCategories * 5 + 1; i++) {
+  for (let i = 0; i < numCategories * numQuestions + 1; i++) {
     if (row >= numCategories) {
       row = 0;
       column += 1;
@@ -110,7 +111,7 @@ function hideLoadingView() {
   gameStarted = true;
 }
 
-//Getting the Category ID's
+//Getting the Category ID's (This prevents from getting duplicates)
 async function checkForDuplicates() {
   let categories = [];
   let randomCategory = await axios.get(
@@ -127,7 +128,7 @@ async function checkForDuplicates() {
 
 //Getting Clues and building the table
 async function finishingInitilization(categoryID) {
-  for (cat of categoryID.splice(0, numCategories)) {
+  for (cat of categoryID) {
     let category = await axios.get(
       `https://jservice.io/api/category?id=${cat}`
     );
