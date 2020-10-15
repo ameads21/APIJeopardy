@@ -87,7 +87,6 @@ function fillTable() {
 //Click events in the table
 function handleClick(evt) {
   let evtInfo = categories[evt.target.id[0]].clues[evt.target.id[2]];
-  console.log(evtInfo);
   if (evtInfo.showing === "null") {
     evt.target.innerHTML = evtInfo.question;
     evtInfo.showing = "question";
@@ -119,9 +118,11 @@ async function checkForDuplicates() {
   );
   let categoryID = [...new Set(getCategoryIds(randomCategory.data))];
   categories.push(categoryID);
+  //If the unique Category ID isn't the same as the number of categories assigned, redo this function until so
   if (categoryID.length >= numCategories) {
     finishingInitilization(categoryID);
   } else {
+    //If there are duplicates, it will repeat this function until there aren't any
     checkForDuplicates();
   }
 }
